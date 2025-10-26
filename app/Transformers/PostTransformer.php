@@ -3,6 +3,7 @@
 namespace App\Transformers;
 
 use App\Models\Post;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use League\Fractal\TransformerAbstract;
 
@@ -36,10 +37,15 @@ class PostTransformer extends TransformerAbstract
      */
     public function transform(Post $post)
     {
+        $user = Auth::user();
+        $isLiked = $user ? $post->isLikedBy($user->id) : false;
+        
         return [
             'id' => $post->id,
             'content' => $post->content,
             'image_url' => url($post->image_url),
+            'likes_count' => $post->likes_count,
+            'is_liked' => $isLiked,
             'created_at' => $post->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $post->updated_at->format('Y-m-d H:i:s'),
         ];

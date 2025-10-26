@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Like;
 use App\Models\Post;
 use App\Services\ApiResponseService;
 use App\Transformers\PostTransformer;
@@ -31,6 +32,7 @@ class PostController extends Controller
                 'user',
                 'comments',
                 'comments.user',
+                'likes',
             ])->latest()->paginate(10);
 
             $data = [
@@ -117,6 +119,7 @@ class PostController extends Controller
                 'user',
                 'comments',
                 'comments.user',
+                'likes',
             ])->findOrFail($id);
 
             $data = [
@@ -278,6 +281,147 @@ class PostController extends Controller
         } catch (\Exception $e) {
             return $this->apiResponseService->error(
                 'Failed to delete post',
+                500
+            );
+        }
+    }
+
+    /**
+     * Like a post.
+     */
+    public function like(string $id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            $user = Auth::user();
+
+            // Check if user already liked this post
+            $existingLike = Like::where('user_id', $user->id)
+                ->where('post_id', $post->id)
+                ->first();
+
+            if ($existingLike) {
+                return $this->apiResponseService->error(
+                    'You have already liked this post',
+                    400
+                );
+            }
+
+            // Create new like
+            $like = new Like();
+            $like->user_id = $user->id;
+            $like->post_id = $post->id;
+            $like->save();
+
+            $data = [
+                'post' => Fractal::item($post->fresh(), new PostTransformer())->toArray(),
+            ];
+
+            return $this->apiResponseService->success(
+                $data,
+                'Post liked successfully'
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->apiResponseService->error(
+                'Post not found',
+                404
+            );
+        } catch (\Exception $e) {
+            return $this->apiResponseService->error(
+                'Failed to like post',
+                500
+            );
+        }
+    }
+
+    /**
+     * Unlike a post.
+     */
+    public function unlike(string $id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            $user = Auth::user();
+
+            // Find the like
+            $like = Like::where('user_id', $user->id)
+                ->where('post_id', $post->id)
+                ->first();
+
+            if (!$like) {
+                return $this->apiResponseService->error(
+                    'You have not liked this post',
+                    400
+                );
+            }
+
+            // Delete the like
+            $like->delete();
+
+            $data = [
+                'post' => Fractal::item($post->fresh(), new PostTransformer())->toArray(),
+            ];
+
+            return $this->apiResponseService->success(
+                $data,
+                'Post unliked successfully'
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->apiResponseService->error(
+                'Post not found',
+                404
+            );
+        } catch (\Exception $e) {
+            return $this->apiResponseService->error(
+                'Failed to unlike post',
+                500
+            );
+        }
+    }
+
+    /**
+     * Toggle like status for a post.
+     */
+    public function toggleLike(string $id)
+    {
+        try {
+            $post = Post::findOrFail($id);
+            $user = Auth::user();
+
+            // Check if user already liked this post
+            $existingLike = Like::where('user_id', $user->id)
+                ->where('post_id', $post->id)
+                ->first();
+
+            if ($existingLike) {
+                // Unlike the post
+                $existingLike->delete();
+                $message = 'Post unliked successfully';
+            } else {
+                // Like the post
+                $like = new Like();
+                $like->user_id = $user->id;
+                $like->post_id = $post->id;
+                $like->save();
+                $message = 'Post liked successfully';
+            }
+
+            $data = [
+                'post' => Fractal::item($post->fresh(), new PostTransformer())->toArray(),
+            ];
+
+            return $this->apiResponseService->success(
+                $data,
+                $message
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->apiResponseService->error(
+                'Post not found',
+                404
+            );
+        } catch (\Exception $e) {
+            return $this->apiResponseService->error(
+                'Failed to toggle like',
                 500
             );
         }

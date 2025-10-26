@@ -21,6 +21,9 @@ Route::middleware('custom.sanctum')->group(function () {
     // Post routes
     Route::apiResource('post', PostController::class);
     Route::post('/post/{id}/update-image', [PostController::class, 'updateImage']);
+    Route::post('/post/{id}/like', [PostController::class, 'like']);
+    Route::delete('/post/{id}/like', [PostController::class, 'unlike']);
+    Route::post('/post/{id}/toggle-like', [PostController::class, 'toggleLike']);
     
     // Comment routes
     Route::prefix('post/{postId}')->group(function () {
