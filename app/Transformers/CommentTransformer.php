@@ -30,8 +30,8 @@ class CommentTransformer extends TransformerAbstract
         return [
             'id' => $comment->id,
             'content' => $comment->content,
-            'created_at' => $comment->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $comment->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $comment->created_at->getTimestamp(),
+            'updated_at' => $comment->updated_at->getTimestamp(),
         ];
     }
 

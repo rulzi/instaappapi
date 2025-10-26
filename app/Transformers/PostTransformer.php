@@ -46,8 +46,8 @@ class PostTransformer extends TransformerAbstract
             'image_url' => url($post->image_url),
             'likes_count' => $post->likes_count,
             'is_liked' => $isLiked,
-            'created_at' => $post->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $post->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $post->created_at->getTimestamp(),
+            'updated_at' => $post->updated_at->getTimestamp(),
         ];
     }
 
