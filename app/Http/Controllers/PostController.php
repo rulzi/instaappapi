@@ -27,7 +27,11 @@ class PostController extends Controller
     public function index()
     {
         try {
-            $posts = Post::with('user')->latest()->paginate(10);
+            $posts = Post::with([
+                'user',
+                'comments',
+                'comments.user',
+            ])->latest()->paginate(10);
 
             $data = [
                 'posts' => Fractal::collection($posts, new PostTransformer())->toArray(),
@@ -109,7 +113,11 @@ class PostController extends Controller
     public function show(string $id)
     {
         try {
-            $post = Post::with('user')->findOrFail($id);
+            $post = Post::with([
+                'user',
+                'comments',
+                'comments.user',
+            ])->findOrFail($id);
 
             $data = [
                 'post' => Fractal::item($post, new PostTransformer())->toArray(),
@@ -161,7 +169,6 @@ class PostController extends Controller
 
             $data = [
                 'post' => Fractal::item($post, new PostTransformer())->toArray(),
-                'message' => $request->content,
             ];
 
             return $this->apiResponseService->success(

@@ -14,7 +14,8 @@ class PostTransformer extends TransformerAbstract
      * @var array
      */
     protected array $defaultIncludes = [
-        'user'
+        'user',
+        'comments',
     ];
     
     /**
@@ -23,7 +24,8 @@ class PostTransformer extends TransformerAbstract
      * @var array
      */
     protected array $availableIncludes = [
-        'user'
+        'user',
+        'comments'
     ];
     
     /**
@@ -52,5 +54,16 @@ class PostTransformer extends TransformerAbstract
     public function includeUser(Post $post)
     {
         return $this->item($post->user, new UserTransformer());
+    }
+
+    /**
+     * Include comments data
+     *
+     * @param Post $post
+     * @return \League\Fractal\Resource\Collection
+     */
+    public function includeComments(Post $post)
+    {
+        return $this->collection($post->comments, new CommentTransformer());
     }
 }

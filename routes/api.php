@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,4 +21,9 @@ Route::middleware('custom.sanctum')->group(function () {
     // Post routes
     Route::apiResource('post', PostController::class);
     Route::post('/post/{id}/update-image', [PostController::class, 'updateImage']);
+    
+    // Comment routes
+    Route::prefix('post/{postId}')->group(function () {
+        Route::apiResource('comment', CommentController::class);
+    });
 });
