@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,4 +16,8 @@ Route::middleware('custom.sanctum')->group(function () {
     });
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    
+    // Post routes
+    Route::apiResource('post', PostController::class);
+    Route::post('/post/{id}/update-image', [PostController::class, 'updateImage']);
 });
