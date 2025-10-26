@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\ApiResponseService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,39 +21,23 @@ class CustomSanctumAuth
         $token = $request->bearerToken();
 
         if (!$token) {
-            return response()->json([
-                'message' => 'Unauthenticated.',
-                'error' => 'Token not provided',
-                'status' => 401
-            ], 401);
+            return ApiResponseService::unauthorized('Token not provided');
         }
 
         $accessToken = PersonalAccessToken::findToken($token);
 
         if (!$accessToken) {
-            return response()->json([
-                'message' => 'Unauthenticated.',
-                'error' => 'Invalid token',
-                'status' => 401
-            ], 401);
+            return ApiResponseService::unauthorized('Invalid token');
         }
 
         if ($accessToken->expires_at && $accessToken->expires_at->isPast()) {
-            return response()->json([
-                'message' => 'Unauthenticated.',
-                'error' => 'Token expired',
-                'status' => 401
-            ], 401);
+            return ApiResponseService::unauthorized('Token expired');
         }
 
         $user = $accessToken->tokenable;
         
         if (!$user) {
-            return response()->json([
-                'message' => 'Unauthenticated.',
-                'error' => 'User not found',
-                'status' => 401
-            ], 401);
+            return ApiResponseService::unauthorized('User not found');
         }
 
         Auth::setUser($user);

@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Services\ApiResponseService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
@@ -39,11 +40,7 @@ class Handler extends ExceptionHandler
     protected function unauthenticated($request, AuthenticationException $exception)
     {
         if ($request->expectsJson()) {
-            return response()->json([
-                'message' => 'Unauthenticated.',
-                'error' => 'Authentication required',
-                'status' => 401
-            ], 401);
+            return ApiResponseService::unauthorized('Authentication required');
         }
 
         return redirect()->guest(route('login'));
@@ -55,18 +52,10 @@ class Handler extends ExceptionHandler
     protected function handleUnauthorizedHttpException(UnauthorizedHttpException $e, Request $request): JsonResponse
     {
         if ($request->expectsJson()) {
-            return response()->json([
-                'message' => 'Unauthorized.',
-                'error' => 'Access denied',
-                'status' => 401
-            ], 401);
+            return ApiResponseService::unauthorized('Access denied');
         }
 
-        return response()->json([
-            'message' => 'Unauthorized.',
-            'error' => 'Access denied',
-            'status' => 401
-        ], 401);
+        return ApiResponseService::unauthorized('Access denied');
     }
 
     /**
@@ -74,11 +63,7 @@ class Handler extends ExceptionHandler
      */
     protected function invalidJson($request, ValidationException $exception): JsonResponse
     {
-        return response()->json([
-            'message' => 'The given data was invalid.',
-            'errors' => $exception->errors(),
-            'status' => 422
-        ], 422);
+        return ApiResponseService::validationError($exception->errors(), 'The given data was invalid.');
     }
 
     /**
