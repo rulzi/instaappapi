@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\ApiResponseService;
+use App\Transformers\UserTransformer;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Spatie\Fractal\Facades\Fractal;
 
 class AuthController extends Controller
 {
@@ -33,7 +34,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $data = [
-                'user' => $user,
+                'user' => Fractal::item($user, new UserTransformer())->toArray(),
                 'token' => $token,
                 'token_type' => 'Bearer',
             ];
@@ -65,7 +66,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $data = [
-                'user' => $user,
+                'user' => Fractal::item($user, new UserTransformer())->toArray(),
                 'token' => $token,
                 'token_type' => 'Bearer',
             ];
@@ -99,7 +100,7 @@ class AuthController extends Controller
     {
         try {
             $data = [
-                'user' => $request->user(),
+                'user' => Fractal::item($request->user(), new UserTransformer())->toArray(),
             ];
 
             return ApiResponseService::success($data, 'User data retrieved successfully');
