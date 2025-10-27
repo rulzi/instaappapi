@@ -13,7 +13,7 @@ class UserTransformer extends TransformerAbstract
      * @var array
      */
     protected array $defaultIncludes = [
-        //
+        'permissions',
     ];
     
     /**
@@ -22,7 +22,7 @@ class UserTransformer extends TransformerAbstract
      * @var array
      */
     protected array $availableIncludes = [
-        //
+        'permissions',
     ];
     
     /**
@@ -39,5 +39,16 @@ class UserTransformer extends TransformerAbstract
             'created_at' => $user->created_at->getTimestamp(),
             'updated_at' => $user->updated_at->getTimestamp(),
         ];
+    }
+
+    /**
+     * Include permissions data
+     *
+     * @param User $user
+     * @return \League\Fractal\Resource\Item
+     */
+    public function includePermissions(User $user)
+    {
+        return $this->item($user->permissions, new PermissionTransformer());
     }
 }

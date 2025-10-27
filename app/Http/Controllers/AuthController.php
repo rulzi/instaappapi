@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission;
 use App\Models\User;
 use App\Services\ApiResponseService;
+use App\Transformers\PermissionTransformer;
 use App\Transformers\UserTransformer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +32,12 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
             ]);
+
+            $permissions = Permission::create([
+                'user_id' => $user->id,
+            ]);
+
+            $user->load('permissions');
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -62,7 +70,7 @@ class AuthController extends Controller
                 return ApiResponseService::unauthorized('Invalid credentials');
             }
 
-            $user = User::where('email', $request->email)->firstOrFail();
+            $user = User::with('permissions')->where('email', $request->email)->firstOrFail();
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $data = [
@@ -99,8 +107,11 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         try {
+            $user = $request->user();
+            $user->load('permissions');
+
             $data = [
-                'user' => Fractal::item($request->user(), new UserTransformer())->toArray(),
+                'user' => Fractal::item($user, new UserTransformer())->toArray(),
             ];
 
             return ApiResponseService::success($data, 'User data retrieved successfully');
